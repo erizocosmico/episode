@@ -40,3 +40,8 @@ sudo curl https://raw.github.com/mvader/episode/master/episode.py -o /usr/local/
 sudo chmod +x /usr/local/bin/episode
 ```
 
+TODO's
+-----
+* Download episodes from Xth season on.
+* Type just the name of the show rather than the url.
+
