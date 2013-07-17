@@ -63,9 +63,7 @@ def get_show_url(name):
             a = col('a').eq(0)
             if not a:
                 continue
-            print(a.text())
             if a.text().lower() == name.lower():
-                print(a.attr('href'))
                 return 'http://eztv.it' + a.attr('href')
     except:
         print('Error retrieving eztv url for given show.')
