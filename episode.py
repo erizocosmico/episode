@@ -5,13 +5,14 @@
 
 Usage:
   episode <show_url> [-c <content_in_name>] [-m]
-  episode <show_url> -s <season> [-c <content_in_name>] [-m]
+  episode <show_url> (-s|-o) <season> [-c <content_in_name>] [-m]
   episode <show_url> -s <season> (-e|-f) <episode> [-c <content_in_name>] [-m]
   episode (-h | --help)
 
 Options:
   -h --help     Show this screen.
   -s            Download from the specified season.
+  -o            Download from the Xth season on.
   -e            Just the selected episode.
   -f            From the selected episode on.
   -c            Search content in episode name (e.g: 720p)
@@ -26,7 +27,7 @@ import requests
 import sys
 import os
 import re
-__version__ = '1.0.0'
+__version__ = '1.0.2'
 
 args = docopt(__doc__, version=__version__)
 downloaded = []
@@ -48,8 +49,31 @@ def parse_episode_name(text):
     
 def build_episode_name(season, episode):
     return "%dx%s%d" % (season, '' if episode >= 10 else '0', episode)
+    
+def get_show_url(name):
+    try:
+        r = requests.get('http://eztv.it/showlist/')
+        if r.status_code != 200:
+            raise Exception
+        html = pq(r.text)
+        table = html('table').eq(1)
+        for tr in table('tr'):
+            row = table(tr)
+            col = row('td').eq(0)
+            a = col('a').eq(0)
+            if not a:
+                continue
+            print(a.text())
+            if a.text().lower() == name.lower():
+                print(a.attr('href'))
+                return 'http://eztv.it' + a.attr('href')
+    except:
+        print('Error retrieving eztv url for given show.')
+        sys.exit(2)
+        
+    return None
 
-if args['<show_url>']:
+if __name__ == '__main__':
     try:
         url = args['<show_url>']
         content_in_name = args['<content_in_name>']
@@ -57,6 +81,7 @@ if args['<show_url>']:
         download_season = args['-s']
         download_episode = args['-e']
         download_from = args['-f']
+        download_season_from = args['-o']
         if download_season:
             try:
                 season = int(args['<season>'])
@@ -69,13 +94,26 @@ if args['<show_url>']:
                     episode = None
         search_content = args['-c']
 
-        req = requests.get(url)
-        if not 'bitcoin:1EZTVaGQ6UsjYJ9fwqGnd45oZ6HGT7WKZd' in req.text or not 'eztv.it/shows/' in url:
-            print("This is not an EZTV link.")
+        if not 'http' in url or not 'eztv.it/shows/' in url:
+            url = get_show_url(url)
+        else:
+            try:
+                req = requests.get(url)
+                if not 'bitcoin:1EZTVaGQ6UsjYJ9fwqGnd45oZ6HGT7WKZd' in req.text:
+                    raise Exception
+            except:
+                url = get_show_url(url)
+        if not url:
+            print('Unable to find episodes for the specified show.')
             sys.exit(2)
         
+        try:
+            req = req
+        except NameError:
+            req = requests.get(url)
+
         show_name = filter(None, url.split('/'))[-1]
-    
+
         content = pq(req.text)
         torrents_table = pq(content('table').eq(6))
         for tr in torrents_table('tr')[::-1]:
@@ -89,8 +127,8 @@ if args['<show_url>']:
             name = parse_episode_name(_episode)
             if not name or name in downloaded:
                 continue
-                      
-            if download_season:
+          
+            if download_season or download_season_from:
                 if download_episode:
                     if name != build_episode_name(season, episode):
                         continue
@@ -100,22 +138,24 @@ if args['<show_url>']:
                         continue
                 else:
                     s, ep = name.split('x')
-                    if int(s) != season:
+                    if download_season_from and int(s) < season:
                         continue
-                
+                    elif int(s) != season:
+                        continue
+    
             torrents_column = table_row('td').eq(2)
-            
+
             if magnet_preferred:
                 magnet = torrents_column('a').eq(0).attr('href')
                 os.system("open '%s' > /dev/null" % magnet)
                 print(' * Downloading episode magnet: %s' % name)
-                
+    
             first = True
             for a in torrents_column('a'):
                 if first:
                     first = False
                     continue
-                    
+        
                 if name in downloaded:
                     break
                 torrent_url = torrents_column(a).attr('href')
@@ -126,7 +166,7 @@ if args['<show_url>']:
                     print(' * Downloading episode: %s' % name)
                     downloaded.append(name)
                     break
-                    
+        
             if not name in downloaded and not magnet_preferred:
                 magnet = torrents_column('a').eq(0).attr('href')
                 os.system("open '%s' > /dev/null" % magnet)
@@ -134,5 +174,3 @@ if args['<show_url>']:
     except:
         print("Unknown error occurred.")
         sys.exit(2)
-else:
-    print(__doc__)
