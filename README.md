@@ -27,13 +27,14 @@ Options:
 Examples
 ------
 ```bash
-episode http://eztv.it/shows/78/dexter/
+episode dexter
 episode dexter -o 2
-episode http://eztv.it/shows/78/dexter/ -s 2 -f 6
-episode http://eztv.it/shows/78/dexter/ -s 5
+episode dexter -s 2 -f 6
+episode dexter -s 5
 episode http://eztv.it/shows/78/dexter/ -m
 episode http://eztv.it/shows/78/dexter/ -c '720p'
 ```
+You can type the name of the show or the url of the show at eztv.it. Up to you. Typing the url is faster, though.
 
 Install
 ------
