@@ -9,14 +9,15 @@ Usage
 episode
 
 Usage:
-  episode <eztv_show_url> [-c <content_in_name>] [-m]
-  episode <eztv_show_url> -s <season> [-c <content_in_name>] [-m]
-  episode <eztv_show_url> -s <season> (-e|-f) <episode> [-c <content_in_name>] [-m]
+  episode <show_url> [-c <content_in_name>] [-m]
+  episode <show_url> (-s|-o) <season> [-c <content_in_name>] [-m]
+  episode <show_url> -s <season> (-e|-f) <episode> [-c <content_in_name>] [-m]
   episode (-h | --help)
 
 Options:
   -h --help     Show this screen.
   -s            Download from the specified season.
+  -o            Download from the Xth season on.
   -e            Just the selected episode.
   -f            From the selected episode on.
   -c            Search content in episode name (e.g: 720p)
@@ -27,6 +28,7 @@ Examples
 ------
 ```bash
 episode http://eztv.it/shows/78/dexter/
+episode dexter -o 2
 episode http://eztv.it/shows/78/dexter/ -s 2 -f 6
 episode http://eztv.it/shows/78/dexter/ -s 5
 episode http://eztv.it/shows/78/dexter/ -m
@@ -39,9 +41,4 @@ Install
 sudo curl https://raw.github.com/mvader/episode/master/episode.py -o /usr/local/bin/episode;
 sudo chmod +x /usr/local/bin/episode
 ```
-
-TODO's
------
-* Download episodes from Xth season on.
-* Type just the name of the show rather than the url.
 
