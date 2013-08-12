@@ -80,7 +80,7 @@ if __name__ == '__main__':
         download_episode = args['-e']
         download_from = args['-f']
         download_season_from = args['-o']
-        if download_season:
+        if download_season or download_season_from:
             try:
                 season = int(args['<season>'])
             except:
